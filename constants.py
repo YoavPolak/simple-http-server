@@ -1,13 +1,9 @@
-BAD_REQUEST = b"""
-HTTP/1.1 400 Bad Request\r\n
-Content-Type: text/plain\r\n
-Content-Length: 11\r\n
-\r\n
-Bad Request
-"""
 
-NOT_FOUND = b"HTTP/1.1 404 Not Found\r\n\r\nFile not found"
-CONTENT_LENGTH_KEY = "content-length"
+# Response messages
+BAD_REQUEST = b"Bad Request"
+NOT_FOUND = b"<h1>404</h1><p>Not Found</p>"
+
+# HTTP Constants
 HTTP_HEADER_DELIMITER = "\r\n\r\n"
 METHODS = ["GET", "POST"]
 HTTP_VERSION = "HTTP/1.1"

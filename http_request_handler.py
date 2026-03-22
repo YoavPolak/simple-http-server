@@ -1,7 +1,7 @@
 import os
 
 from constants import NOT_FOUND
-from response_builder import HTTPResponseBuilder
+from http_response_handler import HTTPResponseHandler
 from response_status import ResponseStatus
 
 class HTTPRequestHandler:
@@ -30,17 +30,17 @@ class HTTPRequestHandler:
         :return: HTTP Response
         """
         path = status[1].split("?")[0]
-        startdir = os.path.abspath(os.curdir)
-        requested_path = os.path.relpath(path, startdir)
+        path = path.lstrip("/")
+        requested_path = os.path.join(os.getcwd(), path)
         requested_path = os.path.abspath(requested_path)
         if os.path.isfile(requested_path):
             with open(requested_path, "rb") as fd:
                 content = fd.read()
-                return HTTPResponseBuilder.build_response(ResponseStatus.OK, content)
+                return HTTPResponseHandler.build_response(ResponseStatus.OK, content)
         elif os.path.isdir(requested_path):
             content = "\n".join(os.listdir(requested_path)).encode()
-            return HTTPResponseBuilder.build_response(ResponseStatus.OK, content)
-        return NOT_FOUND
+            return HTTPResponseHandler.build_response(ResponseStatus.OK, content)
+        return HTTPResponseHandler.build_response(ResponseStatus.NOT_FOUND, NOT_FOUND)
 
     @staticmethod
     def handle_post_request(status, headers, body):

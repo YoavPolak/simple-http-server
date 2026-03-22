@@ -1,6 +1,7 @@
 from constants import HTTP_VERSION
+from http_headers import HTTPHeaders
 
-class HTTPResponseBuilder:
+class HTTPResponseHandler:
     @staticmethod
     def build_response(status: str, content: bytes = b"", headers: str = "") -> bytes:
         """
@@ -12,7 +13,7 @@ class HTTPResponseBuilder:
         """
         response = (
             f"{HTTP_VERSION} {status}\r\n"
-            f"Content-Length: {len(content)}\r\n"
+            f"{HTTPHeaders.CONTENT_LENGTH}: {len(content)}\r\n"
             f"{headers}"
             f"\r\n"
         ).encode() + content

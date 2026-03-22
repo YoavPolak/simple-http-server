@@ -1,14 +1,17 @@
 from datetime import datetime
+from http import HTTPStatus
 from typing import Tuple
 import logging
 
-from constants import CONTENT_LENGTH_KEY, HTTP_HEADER_DELIMITER
+from constants import HTTP_HEADER_DELIMITER
 from socketserver import BaseRequestHandler, TCPServer, ThreadingMixIn
 
+from http_headers import HTTPHeaders
 from http_parser import HTTPParser
 from http_request_handler import HTTPRequestHandler
+from http_response_handler import HTTPResponseHandler
 
-class ThreadedTCPRequestHandler(BaseRequestHandler):
+class HTTPServerHandler(BaseRequestHandler):
     logger = logging.getLogger(__name__)
     logging.basicConfig(level=logging.INFO)
 
@@ -21,14 +24,14 @@ class ThreadedTCPRequestHandler(BaseRequestHandler):
         try:
             status, headers = HTTPParser.parse_headers(headers)
             status = HTTPParser.parse_status(status)
-        except ValueError as response:
-            self.request.sendall(str(response).encode())
+        except ValueError as response_message:
+            self.request.sendall(HTTPResponseHandler.build_response(HTTPStatus.BAD_REQUEST, str(response_message).encode()))
             return
-        content_length = int(headers.get(CONTENT_LENGTH_KEY, 0))
+        content_length = int(headers.get(HTTPHeaders.CONTENT_LENGTH, 0))
         body = self._receive_body(body, content_length)
         response = HTTPRequestHandler.handle(status, headers, body)
         self.request.sendall(response)
-        self.logger.info(f'[{datetime.now()}] {self.client_address[0]} {headers.get("user-agent")}')
+        self.logger.info(f'[{datetime.now()}] {self.client_address[0]} {headers.get(HTTPHeaders.USER_AGENT)}')
 
 
     def _receive_headers(self) -> Tuple[str, str]:
@@ -54,5 +57,5 @@ class ThreadedTCPRequestHandler(BaseRequestHandler):
             body += self.request.recv(1024).decode()
         return body
 
-class ThreadedTCPServer(ThreadingMixIn, TCPServer):
+class HTTPServer(ThreadingMixIn, TCPServer):
     pass
